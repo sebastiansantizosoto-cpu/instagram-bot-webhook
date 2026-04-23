@@ -1,5 +1,9 @@
 from fastapi import FastAPI, Request, Query
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -11,14 +15,15 @@ async def verify_webhook(
     hub_challenge: str = Query(None, alias="hub.challenge"),
     hub_verify_token: str = Query(None, alias="hub.verify_token")
 ):
+    logger.info(f"Webhook verification: mode={hub_mode}")
     if hub_mode == "subscribe" and hub_verify_token == VERIFY_TOKEN:
         return int(hub_challenge)
-    return {"error": "Token inválido"}, 403
+    return {"error": "Token inválido"}
 
 @app.post("/webhook")
 async def receive_message(request: Request):
     data = await request.json()
-    print("Mensaje recibido:", data)
+    logger.info(f"Mensaje recibido: {data}")
     return {"status": "ok"}
 
 @app.get("/")
